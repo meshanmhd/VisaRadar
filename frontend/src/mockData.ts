@@ -12,6 +12,10 @@ export const MOCK_CHANGES: Change[] = [
     source_id: 'src_1',
     before_text: 'The minimum salary requirement for a Skilled Worker visa is £26,200.',
     after_text: 'The minimum salary requirement for a Skilled Worker visa is £38,700.',
+    short_title: 'Salary threshold increased to £38,700',
+    long_description: 'The UK Home Office has announced a significant increase to the minimum salary threshold for the Skilled Worker visa route. This change impacts new applicants and those extending their current visas, requiring sponsors to meet the new £38,700 minimum or the going rate for the occupation, whichever is higher.',
+    short_before: 'Min salary £26,200',
+    short_after: 'Min salary £38,700',
     category: 'Financial Requirements',
     severity: 'severe',
     confidence: 'high',
@@ -24,6 +28,10 @@ export const MOCK_CHANGES: Change[] = [
     source_id: 'src_2',
     before_text: 'Applications take 6 weeks.',
     after_text: 'Applications currently take 8 weeks.',
+    short_title: 'Processing times extended to 8 weeks',
+    long_description: 'Due to a high volume of applications, processing times have been temporarily extended from 6 weeks to 8 weeks for standard applications. Fast-track options remain unaffected.',
+    short_before: '6 weeks processing',
+    short_after: '8 weeks processing',
     category: 'Processing Times',
     severity: 'minor',
     confidence: 'high',
@@ -38,8 +46,8 @@ export const MOCK_CUSTOMERS: Customer[] = [
 ];
 
 export const MOCK_IMPACTS: Impact[] = [
-  { id: 'imp_1', change_id: 'chg_1', customer_id: 'cust_1', level: 'severe', required_action: 'Update salary offerings for new applicants' },
-  { id: 'imp_2', change_id: 'chg_1', customer_id: 'cust_2', level: 'minor', required_action: 'Review current sponsorship certificates' },
+  { id: 'imp_1', change_id: 'chg_1', customer_id: 'cust_1', level: 'severe', required_action: 'Update salary offerings', actual_action: 'Update salary minimums in ATS', short_description: 'Increase job listing salaries to £38,700 minimum.', system_step: 'Pre-Approval (Job Offer)' },
+  { id: 'imp_2', change_id: 'chg_1', customer_id: 'cust_2', level: 'minor', required_action: 'Review current sponsorship', actual_action: 'Audit existing CoS drafts', short_description: 'Check unassigned Certificates of Sponsorship for compliant salaries.', system_step: 'Active (CoS Allocation)' },
 ];
 
 export const MOCK_TASKS: Task[] = [

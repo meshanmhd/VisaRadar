@@ -17,6 +17,10 @@ export interface Change {
   source_id: string;
   before_text: string;
   after_text: string;
+  short_title: string;
+  long_description: string;
+  short_before: string;
+  short_after: string;
   category: string;
   severity: Severity;
   confidence: Confidence;
@@ -41,6 +45,9 @@ export interface Impact {
   customer_id: string;
   level: Severity;
   required_action: string;
+  actual_action: string;
+  short_description: string;
+  system_step: string;
   deadline?: string;
 }
 

@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { Search, MoreHorizontal } from 'lucide-react';
+import { Search, MoreHorizontal, AlertTriangle, Clock } from 'lucide-react';
 import type { Customer } from '../types';
 import { MOCK_IMPACTS } from '../mockData';
 
 const ImpactBadge = ({ customerId }: { customerId: string }) => {
   const impact = MOCK_IMPACTS.find(i => i.customer_id === customerId);
-  if (!impact) return <span className="badge badge-neutral">None</span>;
-  if (impact.level === 'severe') return <span className="badge badge-neg">Severe</span>;
-  if (impact.level === 'minor') return <span className="badge badge-neutral">Minor</span>;
-  return <span className="badge badge-neutral">None</span>;
+  if (!impact) return <span style={{ color: 'var(--color-muted)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>None</span>;
+  if (impact.level === 'severe') {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--color-neg)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <AlertTriangle size={14} strokeWidth={2} /> Severe
+      </span>
+    );
+  }
+  if (impact.level === 'minor') {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--color-ink-soft)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <Clock size={14} strokeWidth={2} /> Minor
+      </span>
+    );
+  }
+  return <span style={{ color: 'var(--color-muted)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>None</span>;
 };
 
 const stages = ['All', 'Pre-Approval', 'Active', 'Post-Approval', 'Closed'];
-const countries = ['All', 'UK', 'Canada', 'Australia'];
+const criticalities = ['All', 'Severe', 'Minor', 'None'];
 
 const Avatar = ({ name }: { name: string }) => {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -32,7 +44,7 @@ const Avatar = ({ name }: { name: string }) => {
 export default function Customers() {
   const [search, setSearch] = useState('');
   const [activeStage, setActiveStage] = useState('All');
-  const [activeCountry, setActiveCountry] = useState('All');
+  const [activeCriticality, setActiveCriticality] = useState('All');
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ['customers'],
@@ -44,8 +56,10 @@ export default function Customers() {
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.visa_type.toLowerCase().includes(search.toLowerCase());
     const matchStage = activeStage === 'All' || c.stage === activeStage;
-    const matchCountry = activeCountry === 'All' || c.country === activeCountry;
-    return matchSearch && matchStage && matchCountry;
+    const impact = MOCK_IMPACTS.find(i => i.customer_id === c.id);
+    const impactLevel = impact?.level ?? 'none';
+    const matchCrit = activeCriticality === 'All' || impactLevel === activeCriticality.toLowerCase();
+    return matchSearch && matchStage && matchCrit;
   });
 
   const columns = ['Client', 'Country', 'Visa Type', 'Stage', 'Contact', 'Language', 'Impact', ''];
@@ -102,14 +116,14 @@ export default function Customers() {
               ))}
             </div>
 
-            {/* Country filter */}
+            {/* Criticality filter */}
             <select
               className="input"
-              value={activeCountry}
-              onChange={e => setActiveCountry(e.target.value)}
+              value={activeCriticality}
+              onChange={e => setActiveCriticality(e.target.value)}
               style={{ width: 'auto', height: 36, fontSize: 13, padding: '0 12px', borderRadius: 10 }}
             >
-              {countries.map(c => <option key={c}>{c}</option>)}
+              {criticalities.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
         </div>

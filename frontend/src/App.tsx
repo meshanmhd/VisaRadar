@@ -1,10 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link, Outlet, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LayoutDashboard, List, Users, Globe, Settings, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, List, Users, Settings, Bell, Search } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Changes from './pages/Changes';
 import Customers from './pages/Customers';
+import Tasks from './pages/Tasks';
+import Public from './pages/Public';
 
 const queryClient = new QueryClient();
 
@@ -38,7 +40,7 @@ const Layout = () => (
 
         <span className="nav-label" style={{ padding: '20px 14px 8px' }}>Workspace</span>
         <NavItem to="/customers" icon={Users}>Customers</NavItem>
-        <NavItem to="/sources" icon={Globe}>Sources</NavItem>
+        <NavItem to="/tasks" icon={List}>Tasks</NavItem>
       </nav>
 
       {/* Bottom profile */}
@@ -91,9 +93,10 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="changes" element={<Changes />} />
             <Route path="customers" element={<Customers />} />
-            <Route path="sources" element={<div style={{ fontSize: 22, fontWeight: 500, color: 'var(--color-ink)' }}>Sources — coming soon</div>} />
+            <Route path="tasks" element={<Tasks />} />
             <Route path="settings" element={<div style={{ fontSize: 22, fontWeight: 500, color: 'var(--color-ink)' }}>Settings — coming soon</div>} />
           </Route>
+          <Route path="/public" element={<Public />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
