@@ -40,6 +40,10 @@ def _prepare_db_engine(raw_url: str):
         if has_ssl:
             connect_args["ssl"] = "require"
 
+        # Neon PgBouncer transaction pooler requires statement_cache_size=0
+        if "pooler" in raw_url or "neon.tech" in raw_url:
+            connect_args["statement_cache_size"] = 0
+
         clean_query = urllib.parse.urlencode({k: v[0] for k, v in query_params.items()})
         cleaned_url = urllib.parse.urlunparse(parsed._replace(query=clean_query))
         return cleaned_url, connect_args
