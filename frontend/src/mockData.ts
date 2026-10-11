@@ -1,6 +1,7 @@
 import type { Source, Change, Customer, Impact, Task, Message } from './types';
 
 export const MOCK_SOURCES: Source[] = [
+  { id: 'src_uk_visa', country: 'India', url: 'https://ukclone.vercel.app', type: 'html', frequency: 'every_6h', status: 'active', last_checked: new Date().toISOString() },
   { id: 'src_1', country: 'UK', url: 'https://gov.uk/visas', type: 'html', frequency: 'hourly', status: 'active', last_checked: new Date().toISOString() },
   { id: 'src_2', country: 'Canada', url: 'https://canada.ca/immigration', type: 'js', frequency: 'daily', status: 'active' },
   { id: 'src_3', country: 'Australia', url: 'https://immi.homeaffairs.gov.au/rules.pdf', type: 'pdf', frequency: 'weekly', status: 'error' },

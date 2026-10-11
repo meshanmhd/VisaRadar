@@ -1,7 +1,7 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
-import { FileText, AlertCircle, Users, ArrowRight, AlertTriangle, Clock, ShieldCheck } from 'lucide-react';
+import { FileText, AlertCircle, Users, ArrowRight, AlertTriangle, Clock, ShieldCheck, RefreshCw } from 'lucide-react';
 import { MOCK_IMPACTS, MOCK_SOURCES } from '../mockData';
 
 interface StatCardProps {
@@ -64,6 +64,10 @@ const StatusBadge = ({ status }: { status: string }) => {
 const columns = ['Country', 'Change', 'Severity', 'Effective', 'Clients', 'Status', ''];
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const [isScraping, setIsScraping] = useState(false);
+  const [scrapeStatus, setScrapeStatus] = useState<string | null>(null);
+
   const { data: summary, isLoading, error } = useQuery({
     queryKey: ['dashboardSummary'],
     queryFn: api.getDashboardSummary,
@@ -73,6 +77,24 @@ export default function Dashboard() {
     queryKey: ['recentChanges'],
     queryFn: api.getChanges,
   });
+
+  const handleRunScrape = async () => {
+    setIsScraping(true);
+    setScrapeStatus('Scraping embassy site & analyzing changes...');
+    try {
+      await api.triggerManualScrape();
+      setTimeout(async () => {
+        await queryClient.invalidateQueries();
+        setIsScraping(false);
+        setScrapeStatus('Scrape complete! Latest changes fetched.');
+        setTimeout(() => setScrapeStatus(null), 4000);
+      }, 3500);
+    } catch (err) {
+      setIsScraping(false);
+      setScrapeStatus('Failed to trigger scraper check.');
+      setTimeout(() => setScrapeStatus(null), 4000);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -90,8 +112,8 @@ export default function Dashboard() {
     );
   }
 
-  const getSourceCountry = (sourceId: string) =>
-    MOCK_SOURCES.find(s => s.id === sourceId)?.country ?? '—';
+  const getSourceCountry = (sourceId: string, changeCountry?: string) =>
+    changeCountry || (sourceId.includes('uk') || sourceId.includes('india') ? 'India' : (MOCK_SOURCES.find(s => s.id === sourceId)?.country ?? 'India'));
 
   const getAffectedCount = (changeId: string) =>
     MOCK_IMPACTS.filter(i => i.change_id === changeId).length;
@@ -105,7 +127,16 @@ export default function Dashboard() {
           <h1 className="section-title">Dashboard</h1>
           <p className="label" style={{ marginTop: 6 }}>Monitor regulatory updates and client impacts.</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button
+            className="btn btn-primary"
+            onClick={handleRunScrape}
+            disabled={isScraping}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, fontSize: 14, fontWeight: 500 }}
+          >
+            <RefreshCw size={15} className={isScraping ? 'spin' : ''} />
+            {isScraping ? 'Scraping...' : 'Run Scraper Check'}
+          </button>
           <input
             type="date"
             className="input"
@@ -122,6 +153,13 @@ export default function Dashboard() {
           </select>
         </div>
       </div>
+
+      {scrapeStatus && (
+        <div className="notice" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, background: 'var(--color-fill)', borderRadius: 12, border: '1px solid var(--color-line)' }}>
+          <RefreshCw size={16} className={isScraping ? 'spin' : ''} style={{ color: 'var(--color-ink)' }} />
+          <span>{scrapeStatus}</span>
+        </div>
+      )}
 
       {/* Stat row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
@@ -213,7 +251,7 @@ export default function Dashboard() {
                   {/* Country */}
                   <td style={{ padding: '14px 20px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-ink-soft)' }}>
-                      {getSourceCountry(change.source_id)}
+                      {getSourceCountry(change.source_id, change.country)}
                     </span>
                   </td>
 

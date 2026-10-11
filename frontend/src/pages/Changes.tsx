@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
-import { Search, SlidersHorizontal, AlertTriangle, ShieldCheck, Clock, X, Users, ArrowRight, ExternalLink } from 'lucide-react';
+import { Search, SlidersHorizontal, AlertTriangle, ShieldCheck, Clock, X, Users, ArrowRight, ExternalLink, RefreshCw, Sparkles } from 'lucide-react';
 import type { Change } from '../types';
 import { MOCK_IMPACTS, MOCK_SOURCES } from '../mockData';
 
@@ -63,16 +63,38 @@ const ConfidenceBar = ({ level }: { level: string }) => {
 };
 
 export default function Changes() {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [selectedChange, setSelectedChange] = useState<Change | null>(null);
+  const [isScraping, setIsScraping] = useState(false);
+  const [scrapeStatus, setScrapeStatus] = useState<string | null>(null);
 
   const { data: changes, isLoading } = useQuery({
     queryKey: ['changes'],
     queryFn: api.getChanges,
   });
 
-  const getSourceCountry = (sourceId: string) => MOCK_SOURCES.find(s => s.id === sourceId)?.country ?? '—';
+  const handleRunScrape = async () => {
+    setIsScraping(true);
+    setScrapeStatus('Running manual check across embassy targets...');
+    try {
+      await api.triggerManualScrape();
+      setTimeout(async () => {
+        await queryClient.invalidateQueries();
+        setIsScraping(false);
+        setScrapeStatus('Scrape complete! Data updated.');
+        setTimeout(() => setScrapeStatus(null), 4000);
+      }, 3500);
+    } catch (err) {
+      setIsScraping(false);
+      setScrapeStatus('Failed to trigger scraper.');
+      setTimeout(() => setScrapeStatus(null), 4000);
+    }
+  };
+
+  const getSourceCountry = (sourceId: string, changeCountry?: string) =>
+    changeCountry || (sourceId.includes('uk') || sourceId.includes('india') ? 'India' : (MOCK_SOURCES.find(s => s.id === sourceId)?.country ?? 'India'));
   const getSourceUrl = (sourceId: string) => MOCK_SOURCES.find(s => s.id === sourceId)?.url ?? '#';
 
   const filtered = changes?.filter(c => {
@@ -94,10 +116,23 @@ export default function Changes() {
           <h1 className="section-title">Rule Changes</h1>
           <p className="label" style={{ marginTop: 6 }}>Review, verify, and action incoming regulatory updates.</p>
         </div>
-        <button className="btn btn-primary">
-          Run Manual Check
+        <button
+          className="btn btn-primary"
+          onClick={handleRunScrape}
+          disabled={isScraping}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 38, fontSize: 14, fontWeight: 500 }}
+        >
+          <RefreshCw size={15} className={isScraping ? 'spin' : ''} />
+          {isScraping ? 'Scraping...' : 'Run Manual Check'}
         </button>
       </div>
+
+      {scrapeStatus && (
+        <div className="notice" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, background: 'var(--color-fill)', borderRadius: 12, border: '1px solid var(--color-line)' }}>
+          <RefreshCw size={16} className={isScraping ? 'spin' : ''} style={{ color: 'var(--color-ink)' }} />
+          <span>{scrapeStatus}</span>
+        </div>
+      )}
 
       {/* Table card */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -273,7 +308,7 @@ export default function Changes() {
 
             <div style={{ marginBottom: 32 }}>
               <div style={{ fontSize: 15, color: 'var(--color-ink-soft)', lineHeight: 1.6, marginBottom: 16 }}>
-                {selectedChange.long_description || selectedChange.after_text}
+                {selectedChange.summary || selectedChange.long_description || selectedChange.after_text}
               </div>
               <a href={getSourceUrl(selectedChange.source_id)} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ display: 'inline-flex' }}>
                 View Original Document <ExternalLink size={16} style={{ marginLeft: 4 }} />
@@ -281,23 +316,13 @@ export default function Changes() {
             </div>
 
             <div style={{ marginBottom: 36 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>Compare Change</h3>
-              <div style={{ display: 'flex', alignItems: 'stretch', gap: 16 }}>
-                 <div style={{ flex: 1, background: 'var(--color-fill)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--color-line)' }}>
-                    <div style={{ fontSize: 12, color: 'var(--color-muted)', textTransform: 'uppercase', marginBottom: 6, fontWeight: 500 }}>Previous Rule</div>
-                    <div style={{ fontSize: 15, color: 'var(--color-ink-soft)' }}>
-                      {selectedChange.short_before || selectedChange.before_text}
-                    </div>
-                 </div>
-                 <div style={{ display: 'flex', alignItems: 'center', color: 'var(--color-muted)' }}>
-                   <ArrowRight size={24} strokeWidth={1} />
-                 </div>
-                 <div style={{ flex: 1, background: 'var(--color-pos-bg)', padding: '16px 20px', borderRadius: 12, border: '1px solid #d2f0c2' }}>
-                    <div style={{ fontSize: 12, color: 'var(--color-pos)', textTransform: 'uppercase', marginBottom: 6, fontWeight: 500 }}>New Rule</div>
-                    <div style={{ fontSize: 15, color: 'var(--color-ink)' }}>
-                      {selectedChange.short_after || selectedChange.after_text}
-                    </div>
-                 </div>
+              <h3 style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Sparkles size={16} style={{ color: 'var(--color-ink)' }} /> AI Summary of Detected Change
+              </h3>
+              <div style={{ background: 'var(--color-fill)', padding: '20px 24px', borderRadius: 16, border: '1px solid var(--color-line)' }}>
+                <div style={{ fontSize: 15, color: 'var(--color-ink)', lineHeight: 1.6, fontWeight: 400 }}>
+                  {selectedChange.summary || selectedChange.after_text || 'No detailed summary generated.'}
+                </div>
               </div>
             </div>
 

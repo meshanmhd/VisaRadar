@@ -15,12 +15,14 @@ export interface Source {
 export interface Change {
   id: string;
   source_id: string;
+  country?: string;
   before_text: string;
   after_text: string;
-  short_title: string;
-  long_description: string;
-  short_before: string;
-  short_after: string;
+  summary?: string;
+  short_title?: string;
+  long_description?: string;
+  short_before?: string;
+  short_after?: string;
   category: string;
   severity: Severity;
   confidence: Confidence;
