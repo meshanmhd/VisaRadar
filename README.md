@@ -1,4 +1,4 @@
-# Nova — Automated Embassy & Immigration Policy Intelligence Platform
+# VisaRadr — Automated Embassy & Immigration Policy Automation Platform
 
 ## The Problem
 
@@ -8,7 +8,6 @@ This operational reality causes severe challenges for immigration law firms, cor
 
 - **Unannounced & Fragmented Changes**: Critical policy alterations—such as revised maintenance funds, biometric appointment rules, or qualifying work experience criteria—are introduced with little to no notice.
 - **Costly Manual Monitoring**: Caseworkers and legal teams expend extensive manual effort repeatedly checking dozens of embassy pages. Despite this effort, subtle updates to embedded guidelines or sub-sections are routinely overlooked.
-- **Client Impact Blindness**: When a policy changes, determining precisely which clients, visa subclasses, application stages, and submission deadlines are impacted requires manual audit across client records, creating delayed and error-prone responses.
 - **Severe Real-World Consequences**: Missing a single policy update leads to refused visa applications, lost government application fees, breached deadlines, visa status lapses, and substantial reputational and legal risk.
 - **Communication Bottlenecks**: Translating complex legal amendments into actionable client advisories, assignable operational tasks, and client communications across multiple languages is slow and reactive.
 
@@ -16,11 +15,20 @@ This operational reality causes severe challenges for immigration law firms, cor
 
 ## The Solution
 
-**Nova** is an intelligent, multi-agent embassy surveillance and regulatory intelligence platform. It continuously monitors target immigration authorities, isolates exact text and policy revisions, analyzes regulatory intent using Large Language Models, and maps policy impacts directly to tracked client portfolios.
+**VisaRadar** is an intelligent, multi-agent embassy surveillance and regulatory intelligence platform. It continuously monitors target immigration authorities, isolates exact text and policy revisions, analyzes regulatory intent using Large Language Models, and maps policy impacts directly to tracked client portfolios.
+When any chnages are noticed it alert the dashboard with every needed data s like, summary of the problem, affected customers of the organization, and any possible changes needed to the organization website or internal software.
+Also we have Public webpage that lists the changes in a single area, so users can spot any changes for free and hassle free.
+
+---
+
+## How we tested
+Because we cant change any live embassy website to trigger the process, we made a demo static website to act as the embassy page and made changes to that webpage and triggered the alert successfully.
+Demo Website Repo URL: [https://github.com/meshanmhd/](https://github.com/meshanmhd/UkClone)
+Live Demo website: [https://ukclone.vercel.app/]
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        Nova Surveillance Engine                        │
+│                        VisaRadar Surveillance Engine                        │
 │                                                                        │
 │   FetcherAgent  ──►  ParserAgent  ──►  DiffAgent  ──►  ClassifierAgent │
 │        │                                                      │        │
@@ -38,7 +46,7 @@ This operational reality causes severe challenges for immigration law firms, cor
                                    Real-Time SSE Stream       Audit Logs
                                             │
                                             ▼
-                             Nova Command Center (React UI)
+                             VisaRadar Command Center (React UI)
                    ┌──────────────────────────────────────────────────┐
                    │  • Changes Feed & Semantic Diff Viewer           │
                    │  • Client Portfolio Impact Engine                │
@@ -74,7 +82,7 @@ This operational reality causes severe challenges for immigration law firms, cor
 
 ## Prerequisites
 
-Live Project URL: https://visaradar-nova.vercel.app/
+Live Project URL: [https://visaradar-nova.vercel.app/]
 
 ---
 
