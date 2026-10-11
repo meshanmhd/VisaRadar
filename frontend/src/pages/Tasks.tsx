@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Search, MoreHorizontal, CheckCircle2, Circle, X, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Search, MoreHorizontal, X, ArrowRight } from 'lucide-react';
 import { MOCK_TASKS, MOCK_CHANGES, MOCK_SOURCES, MOCK_IMPACTS } from '../mockData';
-import type { Task, Change } from '../types';
+import type { Task } from '../types';
 
 export default function Tasks() {
   const [search, setSearch] = useState('');

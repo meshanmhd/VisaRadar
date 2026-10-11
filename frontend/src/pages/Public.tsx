@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { Search, Calendar } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { MOCK_SOURCES } from '../mockData';
 
 export default function Public() {

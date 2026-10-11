@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
-import { Search, SlidersHorizontal, AlertTriangle, ShieldCheck, Clock, X, Users, ArrowRight, ExternalLink, RefreshCw, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, AlertTriangle, ShieldCheck, Clock, X, Users, ExternalLink, RefreshCw, Sparkles } from 'lucide-react';
 import type { Change } from '../types';
 import { MOCK_IMPACTS, MOCK_SOURCES } from '../mockData';
 
@@ -38,28 +38,6 @@ const StatusBadge = ({ status }: { status: string }) => {
     return <span style={{ color: 'var(--color-muted)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>False positive</span>;
   }
   return <span style={{ color: 'var(--color-ink-soft)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{status}</span>;
-};
-
-const ConfidenceBar = ({ level }: { level: string }) => {
-  const filled = level === 'high' ? 3 : level === 'medium' ? 2 : 1;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ display: 'flex', gap: 3 }}>
-        {[1, 2, 3].map(i => (
-          <div
-            key={i}
-            style={{
-              width: 4,
-              height: 14,
-              borderRadius: 2,
-              background: i <= filled ? 'var(--color-ink)' : 'var(--color-fill-strong)',
-            }}
-          />
-        ))}
-      </div>
-      <span style={{ fontSize: 12, color: 'var(--color-muted)', textTransform: 'capitalize' }}>{level}</span>
-    </div>
-  );
 };
 
 export default function Changes() {
