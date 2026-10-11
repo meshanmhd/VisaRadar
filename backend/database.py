@@ -13,8 +13,42 @@ import uuid
 from config import settings
 
 
+import urllib.parse
+
+
 # ── Engine ─────────────────────────────────────────────────────────────────────
-engine = create_async_engine(settings.database_url, echo=False, future=True)
+def _prepare_db_engine(raw_url: str):
+    """
+    Format database URL and connection arguments.
+    Handles Neon PostgreSQL URLs by stripping incompatible parameters
+    (sslmode, channel_binding) and configuring SSL for asyncpg.
+    """
+    if raw_url.startswith("postgres://"):
+        raw_url = raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif raw_url.startswith("postgresql://") and not raw_url.startswith("postgresql+asyncpg://"):
+        raw_url = raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+    connect_args = {}
+    if "asyncpg" in raw_url:
+        parsed = urllib.parse.urlparse(raw_url)
+        query_params = urllib.parse.parse_qs(parsed.query)
+        has_ssl = "sslmode" in query_params or "ssl" in query_params or "neon.tech" in raw_url
+        query_params.pop("sslmode", None)
+        query_params.pop("channel_binding", None)
+        query_params.pop("ssl", None)
+
+        if has_ssl:
+            connect_args["ssl"] = "require"
+
+        clean_query = urllib.parse.urlencode({k: v[0] for k, v in query_params.items()})
+        cleaned_url = urllib.parse.urlunparse(parsed._replace(query=clean_query))
+        return cleaned_url, connect_args
+
+    return raw_url, connect_args
+
+
+db_url, db_connect_args = _prepare_db_engine(settings.database_url)
+engine = create_async_engine(db_url, connect_args=db_connect_args, echo=False, future=True)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -200,13 +234,14 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         
-        # Ensure new columns exist on SQLite table 'changes'
-        try:
-            result = await conn.execute(text("PRAGMA table_info(changes);"))
-            columns = [row[1] for row in result.fetchall()]
-            if "summary" not in columns:
-                await conn.execute(text("ALTER TABLE changes ADD COLUMN summary TEXT;"))
-            if "short_title" not in columns:
-                await conn.execute(text("ALTER TABLE changes ADD COLUMN short_title VARCHAR;"))
-        except Exception:
-            pass
+        # Ensure new columns exist on SQLite table 'changes' (if using SQLite)
+        if "sqlite" in str(engine.url):
+            try:
+                result = await conn.execute(text("PRAGMA table_info(changes);"))
+                columns = [row[1] for row in result.fetchall()]
+                if "summary" not in columns:
+                    await conn.execute(text("ALTER TABLE changes ADD COLUMN summary TEXT;"))
+                if "short_title" not in columns:
+                    await conn.execute(text("ALTER TABLE changes ADD COLUMN short_title VARCHAR;"))
+            except Exception:
+                pass
